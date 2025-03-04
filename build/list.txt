@@ -6,6 +6,7 @@ manifest.json
 messageListener.js
 options.js
 README.md
+scriptImport.js
 tabsInfo.js
 urlUtils.js
 worker.js
