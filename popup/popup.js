@@ -113,6 +113,16 @@ const setPanelOptions = async () => {
         }
     }
     if (collapseOptions) toggleExpendOptions(false);
+    
+    // Hide locked setting groups from UI
+    const lockedGroups = [
+        'onDuplicateTabDetectedGroup',
+        'tabPriorityGroup',
+        'matchingRulesGroup'
+    ];
+    lockedGroups.forEach(groupId => {
+        $(`#${groupId}`).hide();
+    });
 };
 
 const handleMessage = (message) => {
