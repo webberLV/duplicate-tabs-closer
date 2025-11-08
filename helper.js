@@ -1,4 +1,3 @@
-
 "use strict";
 
 // eslint-disable-next-line no-unused-vars
@@ -212,9 +211,19 @@ const getStoredOptions = () => Promise.all([
     })
 ]).then(results => {
     const [localOptions, managedOptions] = results;
+    const mergedOptions = Object.assign({}, localOptions || {}, managedOptions || {});
+    
+    // Identify locked keys from the merged options
+    const lockedKeys = [];
+    for (const key in mergedOptions) {
+        if (mergedOptions[key] && mergedOptions[key].locked) {
+            lockedKeys.push(key);
+        }
+    }
+    
     return {
-        storedOptions: Object.assign({}, localOptions || {}, managedOptions || {}),
-        lockedKeys: Object.keys(managedOptions || {})
+        storedOptions: mergedOptions,
+        lockedKeys: lockedKeys
     };
 });
 
