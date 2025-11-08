@@ -88,14 +88,15 @@ const defaultOptions = {
         value: false
     },
     environment: {
-        value: "firefox"
+        value: "firefox",
+        locked: true
     }
 };
 
 const setupDefaultOptions = async () => {
     const environment = await getEnvironment();
     const options = Object.assign({}, defaultOptions);
-    options.environment.value = environment;
+    options.environment = Object.assign({}, defaultOptions.environment, { value: environment });
     return options;
 };
 
@@ -112,27 +113,48 @@ const getNotInReferenceKeys = (referenceKeys, keys) => {
 
 // eslint-disable-next-line no-unused-vars
 const initializeOptions = async () => {
-    const options = await getStoredOptions();
-    let storedOptions = options.storedOptions;
-    if (storedOptions.length === 0) {
-        const intialOptions = await setupDefaultOptions();
-        storedOptions = await saveStoredOptions(intialOptions);
-    } else {
-        const storedKeys = Object.keys(storedOptions).sort();
-        const defaultKeys = Object.keys(defaultOptions).sort();
-        if (JSON.stringify(storedKeys) != JSON.stringify(defaultKeys)) {
-            const obsoleteKeys = getNotInReferenceKeys(storedKeys, defaultKeys);
-            obsoleteKeys.forEach(key => delete storedOptions[key]);
-            const missingKeys = getNotInReferenceKeys(defaultKeys, storedKeys);
-            // eslint-disable-next-line no-return-assign
-            missingKeys.forEach(key => storedOptions[key] = { value: defaultOptions[key].value });
-            const environment = await getEnvironment();
-            storedOptions.environment.value = environment;
-            storedOptions = await saveStoredOptions(storedOptions, true);
+    const storedResult = await getStoredOptions();
+    const currentStoredOptions = storedResult.storedOptions || {};
+    const defaultStoredOptions = await setupDefaultOptions();
+
+    const defaultKeys = Object.keys(defaultStoredOptions).sort();
+    const storedKeys = Object.keys(currentStoredOptions).sort();
+
+    let mustPersist = false;
+    const mergedOptions = {};
+
+    defaultKeys.forEach(key => {
+        const defaultOption = defaultStoredOptions[key];
+        const storedOption = currentStoredOptions[key];
+
+        if (defaultOption.locked) {
+            mergedOptions[key] = { value: defaultOption.value, locked: true };
+            if (!storedOption || storedOption.value !== defaultOption.value || storedOption.locked !== true) {
+                mustPersist = true;
+            }
         }
-    }
-    setOptions(storedOptions);
-    setEnvironment(storedOptions);
+        else if (storedOption) {
+            mergedOptions[key] = Object.assign({}, storedOption);
+            if (Object.prototype.hasOwnProperty.call(defaultOption, "locked") && storedOption.locked !== defaultOption.locked) {
+                mergedOptions[key].locked = defaultOption.locked;
+                mustPersist = true;
+            }
+        }
+        else {
+            mergedOptions[key] = Object.assign({}, defaultOption);
+            mustPersist = true;
+        }
+    });
+
+    const obsoleteKeys = getNotInReferenceKeys(storedKeys, defaultKeys);
+    if (obsoleteKeys.length > 0) mustPersist = true;
+
+    const finalOptions = mustPersist
+        ? await saveStoredOptions(mergedOptions, true)
+        : mergedOptions;
+
+    setOptions(finalOptions);
+    setEnvironment(finalOptions);
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -141,6 +163,11 @@ const setStoredOption = async (name, value, refresh) => {
     const storedOptions = options.storedOptions;
     
     // Prevent changing locked settings
+    if (!Object.prototype.hasOwnProperty.call(storedOptions, name)) {
+        console.warn(`Setting "${name}" does not exist and cannot be changed`);
+        return;
+    }
+
     if (storedOptions[name].locked) {
         console.warn(`Setting "${name}" is locked and cannot be changed`);
         return;
