@@ -186,14 +186,23 @@ const setPanelOptions = async () => {
     setPanelOption({ storedOption: storedOption, value: storedOptions[storedOption].value, isLockedKey: lockedKeys.includes(storedOption) });
   }
    
-  $("#onDuplicateTabDetectedTitle").closest("li").prev("li").hide();  
-  $("#onDuplicateTabDetectedTitle").closest("li").hide(); 
-  
-  $("#tabPriorityTitle").closest("li").prev("li").hide(); 
-  $("#tabPriorityTitle").closest("li").hide(); 
-  
-  $("#matchingRulesTitle").closest("li").prev("li").hide(); 
-  $("#matchingRulesTitle").closest("li").hide(); 
+  hideOptionSection("#onDuplicateTabDetectedTitle");
+  hideOptionSection("#tabPriorityTitle");
+  hideOptionSection("#matchingRulesTitle");
+};
+
+const hideOptionSection = (titleSelector) => {
+  const titleElement = $(titleSelector);
+  if (titleElement.length === 0) return;
+
+  const headerItem = titleElement.closest("li");
+  if (headerItem.length) {
+    headerItem.prev("li").hide();
+    headerItem.hide();
+
+    const bodyItem = headerItem.next("li");
+    if (bodyItem.length) bodyItem.hide();
+  }
 };
 
 const handleMessage = (message) => {
