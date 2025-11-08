@@ -1,5 +1,3 @@
-"use strict";
-
 const defaultOptions = {
     shrunkMode: {
         value: false
