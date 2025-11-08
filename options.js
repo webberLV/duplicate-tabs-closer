@@ -5,19 +5,24 @@ const defaultOptions = {
         value: false
     },
     onDuplicateTabDetected: {
-        value: "N"
+        value: "A",  // Changed to "A" for Auto-close
+        locked: true  // Lock this setting
     },
     onRemainingTab: {
-        value: "A"
+        value: "A",  // Already set to "A" for Activate
+        locked: true  // Lock this setting
     },
     keepTabBasedOnAge: {
-        value: "O"
+        value: "O",  // Keep "O" for Older tab
+        locked: true  // Lock this setting
     },
     keepTabWithHttps: {
-        value: true
+        value: true,  // Already true - HTTPS over HTTP
+        locked: true  // Lock this setting
     },
     keepPinnedTab: {
-        value: true
+        value: true,  // Already true - Protect pinned tabs
+        locked: true  // Lock this setting
     },
     keepTabWithHistory: {
         value: false
@@ -26,22 +31,28 @@ const defaultOptions = {
         value: "C"
     },
     ignoreHashPart: {
-        value: false
+        value: false,
+        locked: true  // Lock - always compare hash part
     },
     ignoreSearchPart: {
-        value: false
+        value: false,
+        locked: true  // Lock - always compare search part
     },
     ignorePathPart: {
-        value: false
+        value: false,
+        locked: true  // Lock - always compare path part
     },
     ignore3w: {
-        value: false
+        value: true,  // Changed to true - always ignore "www"
+        locked: true  // Lock this setting
     },
     caseInsensitive: {
-        value: false
+        value: true,  // Changed to true - always case insensitive
+        locked: true  // Lock this setting
     },
     compareWithTitle: {
-        value: false
+        value: false,
+        locked: true  // Lock - don't compare titles
     },
     onDuplicateTabDetectedPinned: {
         value: true
@@ -128,6 +139,13 @@ const initializeOptions = async () => {
 const setStoredOption = async (name, value, refresh) => {
     const options = await getStoredOptions();
     const storedOptions = options.storedOptions;
+    
+    // Prevent changing locked settings
+    if (storedOptions[name].locked) {
+        console.warn(`Setting "${name}" is locked and cannot be changed`);
+        return;
+    }
+    
     storedOptions[name].value = value;
     saveStoredOptions(storedOptions);
     setOptions(storedOptions);
