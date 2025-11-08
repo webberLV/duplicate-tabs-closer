@@ -7,7 +7,15 @@ const handleMessage = (message, sender, response) => {
             break;
         }
         case "getStoredOptions": {
-            getStoredOptions().then(storedOptions => response({ data: storedOptions }));
+            // Return both storedOptions and lockedKeys
+            getStoredOptions().then(result => {
+                response({ 
+                    data: {
+                        storedOptions: result.storedOptions,
+                        lockedKeys: result.lockedKeys
+                    }
+                });
+            });
             return true;
         }
         case "getDuplicateTabs": {
