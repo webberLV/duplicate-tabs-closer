@@ -185,6 +185,15 @@ const setPanelOptions = async () => {
   for (const storedOption in storedOptions) {
     setPanelOption({ storedOption: storedOption, value: storedOptions[storedOption].value, isLockedKey: lockedKeys.includes(storedOption) });
   }
+   
+  $("#onDuplicateTabDetectedTitle").closest("li").prev("li").hide();  
+  $("#onDuplicateTabDetectedTitle").closest("li").hide(); 
+  
+  $("#tabPriorityTitle").closest("li").prev("li").hide(); 
+  $("#tabPriorityTitle").closest("li").hide(); 
+  
+  $("#matchingRulesTitle").closest("li").prev("li").hide(); 
+  $("#matchingRulesTitle").closest("li").hide(); 
 };
 
 const handleMessage = (message) => {
